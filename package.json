@@ -1,6 +1,7 @@
 {
   "name": "PlaytomicAPIServer",
   "version": "0.0.2",
+  "repository": "",
   "dependencies": {
     "express": "^4.15.4",
     "geoip-native": "^0.0.8",
