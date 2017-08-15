@@ -1,15 +1,16 @@
-var mongoose = require("mongoose"),
-	mongodb = require("mongodb"),
+var mongoose = require("mongoose");
+mongoose.Promise = global.Promise;
+var	mongodb = require("mongodb"),
 	config = require(__dirname + "/config.js"),
 	datetime = require(__dirname + "/datetime.js");
-    
+
 mongoose.plugin(function (schema) {
 	schema.options.safe = {
 		w: 1
 	};
 	schema.options.strict = true;
 });
-    
+
 mongoose.connect(config.mongodb.playtomic);
 
 var gameMap = {
@@ -45,7 +46,7 @@ var leaderboardScoreMap = {
 };
 
 var leaderboardBanMap = {
-	
+
 };
 
 var playerLevelMap = {
@@ -69,10 +70,10 @@ var playerLevelMap = {
 };
 
 var playerLevelBanMap = {
-	
+
 };
 
-var achievementMap = { 
+var achievementMap = {
 	publickey: String,
 	achievement: String,
 	achievementkey: String,
@@ -90,91 +91,91 @@ var achievementPlayerMap = {
 	date: { type: Number, default: datetime.now },
 	lastupdated: { type: Number, default: datetime.now }
 };
- 
+
 
 // setup
 (function() {
-		
+
 	var collections = ["games", "gamevars", "leaderboard_scores", "leaderboard_bans", "playerlevel_levels", "playerlevel_bans", "achievements", "achievements_players"];
-	
+
 	mongodb.MongoClient.connect(config.mongodb.playtomic, function(error, db) {
 
 	    if(error) {
 	        console.log("connection failed: " + error);
 	        return;
 	    }
-		
+
 		var jobs = [];
-		
+
 		// creating collections
 		collections.forEach(function(collection) {
-			jobs.push(function() { 
+			jobs.push(function() {
 				db.createCollection(collection, {}, next);
 			});
-		});	
-		
+		});
+
 		// create indexes
-		jobs.push(function() { 
-			db.collection("gamevars").createIndex([["publickey", 1], ["name", 1]], next); 
+		jobs.push(function() {
+			db.collection("gamevars").createIndex([["publickey", 1], ["name", 1]], next);
 		});
 
-		jobs.push(function() { 
-			db.collection("leaderboard_scores").createIndex([["publickey", 1], ["hash", 1]], next); 
+		jobs.push(function() {
+			db.collection("leaderboard_scores").createIndex([["publickey", 1], ["hash", 1]], next);
 		});
 
-		// advanced users may override the default index creation for leaderboards that are using their 
+		// advanced users may override the default index creation for leaderboards that are using their
 		// own exact-match indexing
 		if(process.env.DISABLE_SCORE_INDEXES === null) {
-			jobs.push(function() { 
-				db.collection("leaderboard_scores").createIndex([["publickey", 1], ["points", -1]], next); 
+			jobs.push(function() {
+				db.collection("leaderboard_scores").createIndex([["publickey", 1], ["points", -1]], next);
 			});
-			jobs.push(function() { 
-				db.collection("leaderboard_scores").createIndex([["publickey", 1], ["date", -1]], next); 
+			jobs.push(function() {
+				db.collection("leaderboard_scores").createIndex([["publickey", 1], ["date", -1]], next);
 			});
-			jobs.push(function() { 
-				db.collection("leaderboard_scores").createIndex([["p", 1], ["date", -1]], next); 
+			jobs.push(function() {
+				db.collection("leaderboard_scores").createIndex([["p", 1], ["date", -1]], next);
 			});
 		}
 
-		jobs.push(function() { 
-			db.collection("leaderboard_bans").createIndex([["publickey", 1], ["hash", 1]], next); 
+		jobs.push(function() {
+			db.collection("leaderboard_bans").createIndex([["publickey", 1], ["hash", 1]], next);
 		});
-		jobs.push(function() { 
-			db.collection("playerlevel_levels").createIndex([["publickey", 1], ["date", -1]], next); 
+		jobs.push(function() {
+			db.collection("playerlevel_levels").createIndex([["publickey", 1], ["date", -1]], next);
 		});
-		jobs.push(function() { 
-			db.collection("playerlevel_levels").createIndex([["publickey", 1], ["rating", -1]], next); 
+		jobs.push(function() {
+			db.collection("playerlevel_levels").createIndex([["publickey", 1], ["rating", -1]], next);
 		});
-		jobs.push(function() { 
-			db.collection("playerlevel_levels").createIndex([["publickey", 1], ["hash", 1]], next); 
+		jobs.push(function() {
+			db.collection("playerlevel_levels").createIndex([["publickey", 1], ["hash", 1]], next);
 		});
-		jobs.push(function() { 
-			db.collection("playerlevel_bans").createIndex([["publickey", 1], ["hash", 1]], next); 
+		jobs.push(function() {
+			db.collection("playerlevel_bans").createIndex([["publickey", 1], ["hash", 1]], next);
 		});
-		jobs.push(function() { 
-			db.collection("achievements").createIndex([["publickey", 1], ["hash", 1]], next); 
+		jobs.push(function() {
+			db.collection("achievements").createIndex([["publickey", 1], ["hash", 1]], next);
 		});
-		jobs.push(function() { 
-			db.collection("achievements_players").createIndex([["publickey", 1], ["playerid", 1]], next); 
+		jobs.push(function() {
+			db.collection("achievements_players").createIndex([["publickey", 1], ["playerid", 1]], next);
 		});
 
 		function next(error) {
-			
+
 			if(error) {
 				console.log(error);
 			}
-			
+
 			if(!jobs.length) {
 				module.exports.ready = true;
 				db.close();
-			} else { 
+			} else {
 				jobs.shift()();
 			}
 		}
-		
+
 		next();
 	});
-	
+
 })();
 
 module.exports = {
