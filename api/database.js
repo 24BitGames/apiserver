@@ -11,7 +11,8 @@ mongoose.plugin(function (schema) {
 	schema.options.strict = true;
 });
 
-mongoose.connect(config.mongodb.playtomic);
+mongoose.connect(config.mongodb.playtomic, {
+	useMongoClient: true});
 
 var gameMap = {
     publickey: String,
