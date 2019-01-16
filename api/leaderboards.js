@@ -230,6 +230,7 @@ var leaderboards = module.exports = {
                 }
                 // prepare our query for listing
                 query.publickey = options.publickey;
+                query.filters = options.filters;
                 query.perpage = options.perpage;
                 query.page = Math.floor(before / options.perpage) + 1;
                 query.highest = options.lowest !== true;
